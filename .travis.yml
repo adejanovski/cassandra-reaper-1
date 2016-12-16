@@ -1,4 +1,38 @@
 language: java
-
 jdk:
-- oraclejdk7
+- oraclejdk8
+env:
+  - CASSANDRA_VERSION=2.1.16
+#  - CASSANDRA_VERSION=2.2.9
+#  - CASSANDRA_VERSION=3.0.9
+
+#before_install:
+#  - sudo apt-get install libjna-java > /dev/null
+#  - sudo apt-get install python-support > /dev/null
+#  - sudo easy_install pyYaml > /dev/null
+#  - sudo easy_install pip > /dev/null
+#  - sudo pip install ccm > /dev/null
+
+#install:
+#  - ccm create test -v $CASSANDRA_VERSION > /dev/null
+#  - ccm populate -n 3 > /dev/null
+#  - ccm start > /dev/null
+#  - wget https://github.com/riptano/cdm-java/releases/download/0.11/cdm
+#  - chmod 755 cdm
+#  - ./cdm install killrvideo > /dev/null
+#  - ccm node1 nodetool flush > /dev/null
+#  - ccm node2 nodetool flush > /dev/null
+#  - ccm node3 nodetool flush > /dev/null
+
+#before_script:
+#  - npm install -g bower
+
+script:
+  - mvn clean package
+  - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then mvn sonar:sonar -Dsonar.host.url=https://sonarqube.com -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=tlp-cassandra-reaper -Dsonar.github.oauth=$GITHUB_TOKEN -Dsonar.github.repository=adejanovski/cassandra-reaper-1 -Dsonar.github.pullRequest=$TRAVIS_PULL_REQUEST -Dsonar.analysis.mode=preview; fi'
+  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" -a "$TRAVIS_BRANCH" = "master" ]; then mvn sonar:sonar -Dsonar.host.url=https://sonarqube.com -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=tlp-cassandra-reaper -Dsonar.github.oauth=$GITHUB_TOKEN -Dsonar.github.repository=adejanovski/cassandra-reaper-1; fi'
+  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" -a "$TRAVIS_BRANCH" != "master" ]; then mvn sonar:sonar -Dsonar.host.url=https://sonarqube.com -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=tlp-cassandra-reaper -Dsonar.github.oauth=$GITHUB_TOKEN -Dsonar.github.repository=adejanovski/cassandra-reaper-1  -Dsonar.analysis.mode=preview; fi'
+
+after_script:
+  - ccm stop
+  - ccm remove
